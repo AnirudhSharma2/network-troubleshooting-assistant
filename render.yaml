@@ -1,0 +1,19 @@
+# Render Blueprint — deploy backend as a Web Service
+services:
+  - type: web
+    name: netassist-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: sqlite:///./network_troubleshooter.db
+      - key: AI_PROVIDER
+        value: mock
+      - key: CORS_ORIGINS
+        value: '["https://netassist-frontend.vercel.app"]'
+      - key: PYTHON_VERSION
+        value: "3.11.0"
