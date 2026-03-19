@@ -29,6 +29,14 @@ export const analysisAPI = {
     list: () => api.get('/analysis'),
     get: (id) => api.get(`/analysis/${id}`),
     getLearning: (id) => api.get(`/analysis/${id}/learning`),
+    uploadPkt: (file, title = '') => {
+        const form = new FormData();
+        form.append('file', file);
+        form.append('title', title);
+        return api.post('/analysis/upload-pkt', form, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+    },
 };
 
 // Scenarios

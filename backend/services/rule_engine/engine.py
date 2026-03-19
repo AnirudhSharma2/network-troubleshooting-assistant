@@ -68,6 +68,28 @@ class RuleEngine:
             "summary": summary,
         }
 
+    def run_rules(self, parsed: dict[str, Any]) -> list[dict[str, Any]]:
+        """
+        Run all diagnostic rules on an already-parsed data dict.
+        Used by the .pkt upload endpoint where parsing is done externally.
+        """
+        all_issues = []
+        for rule_fn in self.rules:
+            try:
+                issues = rule_fn(parsed)
+                all_issues.extend(issues)
+            except Exception as e:
+                all_issues.append({
+                    "rule": rule_fn.__name__,
+                    "failure_type": "rule_error",
+                    "device": parsed.get("hostname", "Unknown"),
+                    "interface": "N/A",
+                    "severity": "low",
+                    "detail": f"Rule {rule_fn.__name__} encountered an error: {str(e)}",
+                    "fix_command": None,
+                })
+        return all_issues
+
     def _build_summary(self, issues: list[dict[str, Any]]) -> dict[str, Any]:
         """Build a summary of all detected issues."""
         severity_counts = {"critical": 0, "high": 0, "medium": 0, "low": 0}

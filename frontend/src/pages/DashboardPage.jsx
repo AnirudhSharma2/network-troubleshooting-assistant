@@ -25,8 +25,8 @@ export default function DashboardPage() {
     return (
         <div className="fade-in">
             <div className="page-header">
-                <h2>Dashboard</h2>
-                <p>Welcome back, {user?.full_name || user?.username}! Here's your network overview.</p>
+                <h2>Welcome back, {user?.full_name || user?.username}</h2>
+                <p>Here's your network troubleshooting overview.</p>
             </div>
 
             {/* Stats Row */}

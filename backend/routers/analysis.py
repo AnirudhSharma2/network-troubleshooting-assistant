@@ -1,7 +1,7 @@
 """Analysis API routes — core troubleshooting endpoint."""
 
 import json
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -12,6 +12,7 @@ from services.auth import get_current_user
 from services.rule_engine.engine import rule_engine
 from services.scoring import calculate_health_score
 from services.ai.factory import get_ai_provider
+from parsers.pkt_parser import parse_pkt_bytes
 
 router = APIRouter(prefix="/api/analysis", tags=["Analysis"])
 
@@ -52,6 +53,92 @@ def run_analysis(
         title=data.title,
         input_text=data.input_text,
         input_type=data.input_type,
+        issues_json=issues,
+        health_score=health_score,
+        score_breakdown={
+            "total_score": score_result["total_score"],
+            "routing_score": score_result["routing_score"],
+            "interface_score": score_result["interface_score"],
+            "vlan_score": score_result["vlan_score"],
+            "ip_score": score_result["ip_score"],
+            "deductions": score_result["deductions"],
+        },
+        explanation=explanation,
+        fix_commands=fix_commands,
+        status="completed",
+    )
+    db.add(analysis)
+    db.commit()
+    db.refresh(analysis)
+
+    return AnalysisResponse(
+        id=analysis.id,
+        user_id=analysis.user_id,
+        title=analysis.title,
+        input_type=analysis.input_type,
+        issues=[IssueDetail(**iss) for iss in issues],
+        health_score=health_score,
+        score_breakdown=score_result,
+        explanation=explanation,
+        fix_commands=fix_commands,
+        status=analysis.status,
+        created_at=analysis.created_at,
+    )
+
+
+@router.post("/upload-pkt", response_model=AnalysisResponse)
+async def upload_pkt_file(
+    file: UploadFile = File(...),
+    title: str = Form(default=""),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Upload a Cisco Packet Tracer .pkt file and run a full analysis.
+
+    The .pkt file (Packet Tracer 5.x+) is a ZIP-compressed XML file.
+    This endpoint extracts device configs from the XML and feeds them
+    into the same rule engine pipeline as the CLI-paste workflow.
+    """
+    if not file.filename or not file.filename.lower().endswith(".pkt"):
+        raise HTTPException(status_code=400, detail="Only .pkt files are supported.")
+
+    raw_bytes = await file.read()
+    if len(raw_bytes) > 10 * 1024 * 1024:  # 10 MB limit
+        raise HTTPException(status_code=400, detail="File too large (max 10 MB).")
+
+    parsed = parse_pkt_bytes(raw_bytes)
+    if parsed is None:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Could not parse this .pkt file. "
+                "Only Packet Tracer 5.x+ files (ZIP-XML format) are supported. "
+                "For older files, please use 'show running-config' and paste the CLI output instead."
+            ),
+        )
+
+    # Run rule engine on the pre-parsed data directly
+    issues = rule_engine.run_rules(parsed)
+    score_result = calculate_health_score(issues)
+    health_score = score_result["total_score"]
+
+    ai = get_ai_provider()
+    explanation = ai.generate_explanation(issues, health_score)
+
+    fix_commands = "\n\n".join(
+        f"! Fix for: {iss.get('failure_type', 'unknown')} on {iss.get('interface', 'N/A')}\n{iss.get('fix_command', '')}"
+        for iss in issues
+        if iss.get("fix_command")
+    )
+
+    analysis_title = title.strip() or f"PKT Analysis — {file.filename}"
+
+    analysis = Analysis(
+        user_id=current_user.id,
+        title=analysis_title,
+        input_text=parsed["raw_text"],
+        input_type="pkt_file",
         issues_json=issues,
         health_score=health_score,
         score_breakdown={
