@@ -69,6 +69,52 @@ class ScoreBreakdown(BaseModel):
     deductions: list[dict[str, Any]]
 
 
+class ParsedSummary(BaseModel):
+    hostname: str
+    device_count: int = 1
+    device_names: list[str] = Field(default_factory=list)
+    interface_count: int = 0
+    route_count: int = 0
+    vlan_count: int = 0
+    router_process_count: int = 0
+
+
+class EvidenceCommandCheck(BaseModel):
+    key: str
+    label: str
+    detected: bool
+    weight: int
+    why: str
+    recommendation: str
+
+
+class MissingCommandRecommendation(BaseModel):
+    command: str
+    reason: str
+
+
+class EvidenceReport(BaseModel):
+    summary: str
+    overall_score: float
+    confidence: str
+    device_count: int
+    command_checks: list[EvidenceCommandCheck]
+    missing_commands: list[MissingCommandRecommendation]
+    notes: list[str] = Field(default_factory=list)
+
+
+class FixPlanItem(BaseModel):
+    priority: int
+    title: str
+    summary: str
+    failure_type: str
+    severity: str
+    issue_count: int
+    devices: list[str]
+    issue_refs: list[str]
+    commands: list[str]
+
+
 class AnalysisResponse(BaseModel):
     id: int
     user_id: int
@@ -77,6 +123,11 @@ class AnalysisResponse(BaseModel):
     issues: list[IssueDetail]
     health_score: float
     score_breakdown: Optional[ScoreBreakdown] = None
+    parsed_summary: Optional[ParsedSummary] = None
+    evidence: Optional[EvidenceReport] = None
+    fix_plan: list[FixPlanItem] = Field(default_factory=list)
+    insights: list[str] = Field(default_factory=list)
+    engine_mode: str = "deterministic_copilot"
     explanation: str
     fix_commands: Optional[str] = None
     status: str

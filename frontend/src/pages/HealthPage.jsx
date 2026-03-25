@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { analysisAPI } from '../services/api';
 
@@ -9,18 +9,7 @@ export default function HealthPage() {
     const [loading, setLoading] = useState(true);
     const [detailLoading, setDetailLoading] = useState(false);
 
-    useEffect(() => {
-        analysisAPI.list()
-            .then((res) => {
-                setAnalyses(res.data);
-                const preselect = searchParams.get('id');
-                if (preselect) loadDetail(parseInt(preselect));
-            })
-            .catch(console.error)
-            .finally(() => setLoading(false));
-    }, []);
-
-    const loadDetail = async (id) => {
+    const loadDetail = useCallback(async (id) => {
         setDetailLoading(true);
         try {
             const res = await analysisAPI.get(id);
@@ -30,7 +19,18 @@ export default function HealthPage() {
         } finally {
             setDetailLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        analysisAPI.list()
+            .then((res) => {
+                setAnalyses(res.data);
+                const preselect = searchParams.get('id');
+                if (preselect) loadDetail(parseInt(preselect));
+            })
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, [searchParams, loadDetail]);
 
     const scoreColor = (s) => s >= 70 ? '#10b981' : s >= 40 ? '#f59e0b' : '#ef4444';
     const scoreClass = (s) => s >= 80 ? 'good' : s >= 50 ? 'fair' : 'poor';

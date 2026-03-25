@@ -35,8 +35,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="Intelligent network troubleshooting assistant for Cisco Packet Tracer networks. "
-                "Rule-based diagnostic engine with AI-assisted explanations.",
+    description="Deterministic troubleshooting workbench for Cisco Packet Tracer labs with "
+                "CLI capture analysis, evidence coverage, and prioritized fix planning.",
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan,

@@ -18,7 +18,8 @@ export function AuthProvider({ children }) {
                 })
                 .finally(() => setLoading(false));
         } else {
-            setLoading(false);
+            // No token — skip network call, mark auth check as done
+            queueMicrotask(() => setLoading(false));
         }
     }, []);
 
@@ -52,4 +53,5 @@ export function AuthProvider({ children }) {
     );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);

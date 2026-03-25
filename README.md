@@ -1,6 +1,6 @@
-# Network Troubleshooting Assistant — Packet Tracer MCP Server
+# Network Troubleshooting Assistant
 
-An intelligent, full-stack web application for diagnosing and troubleshooting Cisco Packet Tracer network configurations. Features a **deterministic rule-based diagnostic engine** with AI-assisted explanations.
+A full-stack troubleshooting workbench for Cisco Packet Tracer labs. It analyzes pasted CLI captures with a **deterministic rule engine**, evidence coverage scoring, root-cause prioritization, and guided learning content.
 
 ## 🏗 Architecture
 
@@ -13,8 +13,8 @@ An intelligent, full-stack web application for diagnosing and troubleshooting Ci
                   │ REST API (HTTP/JSON)
 ┌─────────────────▼───────────────────────────┐
 │            Backend (FastAPI)                 │
-│  Auth (JWT) │ Rule Engine │ Scoring System  │
-│  AI Layer   │ PDF Reports │ Admin APIs      │
+│ Auth (JWT) │ Rules │ Evidence │ Fix Planner │
+│ Learning   │ PDF Reports │ Admin APIs      │
 └─────────────────┬───────────────────────────┘
                   │
 ┌─────────────────▼───────────────────────────┐
@@ -62,7 +62,7 @@ Frontend runs at **http://localhost:5173**.
 
 ```bash
 cd backend
-python tests/test_engine.py
+python -m pytest tests -q
 ```
 
 ## 📦 Tech Stack
@@ -73,7 +73,7 @@ python tests/test_engine.py
 | Backend | Python, FastAPI, Pydantic |
 | Database | SQLite (via SQLAlchemy) |
 | Auth | JWT (python-jose + bcrypt) |
-| AI | Pluggable abstraction (Mock provider included) |
+| Learning/Scenarios | Offline template provider (no paid API required) |
 | Reports | ReportLab (PDF generation) |
 
 ## 🔧 Core Features
@@ -88,8 +88,13 @@ Detects 8 categories of network issues:
 - Duplicate IP addresses
 - Physical link failures (simulated)
 
-### 2. Health Scoring System (0–100)
-Weighted categories:
+### 2. Evidence Coverage + Health Scoring
+The analyzer reports how complete the capture is and how confident the result should be:
+- Detects whether `show running-config`, `show ip interface brief`, `show ip route`, and `show vlan brief` are present
+- Recommends the next commands to collect when evidence is incomplete
+- Supports combined multi-device captures in a single analysis
+
+Weighted health categories:
 - **Routing**: 30%
 - **Interface**: 25%
 - **VLAN**: 25%
@@ -97,10 +102,10 @@ Weighted categories:
 
 Severity deductions: Critical (−15), High (−10), Medium (−5), Low (−2)
 
-### 3. AI Abstraction Layer
-- **Mock Provider**: Template-based explanations — no API key needed
-- Pluggable architecture for OpenAI/Gemini integration
-- AI used only for explanations and scenarios, never for core diagnosis
+### 3. Deterministic Troubleshooting Copilot
+- Prioritized fix plan that orders root-cause repairs ahead of secondary symptoms
+- Parsed scope summary showing how many devices, interfaces, routes, and VLANs were seen
+- Learning mode that explains why each fix works without relying on a paid model
 
 ### 4. Scenario Generator
 Pre-built practice scenarios across:
@@ -122,7 +127,7 @@ Professional reports with:
 | Page | Route | Description |
 |------|-------|-------------|
 | Dashboard | `/` | Health gauge, recent analyses, error summary |
-| Troubleshoot | `/troubleshoot` | Paste config → analyze → see issues + fixes |
+| Troubleshoot | `/troubleshoot` | Paste multi-device CLI output/config → analyze → see evidence, fix order, and issues |
 | Learning Mode | `/learn` | Why fixes work, concepts, analogies |
 | Scenarios | `/scenarios` | Generate broken network practice labs |
 | Health Score | `/health` | Weighted category breakdown |
@@ -157,17 +162,15 @@ Professional reports with:
 ## ⚠️ Assumptions
 
 1. **No real-time packet sniffing** — Packet Tracer has no API for this
-2. **Configuration-based analysis** — Users paste CLI outputs manually
-3. **Single-device analysis** — Each analysis processes one device's output
-4. **Mock AI provider** — Works without any API keys out of the box
+2. **Configuration-based analysis** — Users paste CLI output manually from Packet Tracer
+3. **Best results come from complete captures** — Missing commands reduce confidence
+4. **Learning/scenario content is offline** — No paid API keys are required
 5. **SQLite** — Zero-config database, suitable for demos
 
 ## 🔮 Future Enhancements
 
-- Multi-device topology analysis
-- Real Packet Tracer file (.pkt) parsing
-- OpenAI/Gemini integration for smarter explanations
+- Stronger rule coverage for ACL, NAT, DHCP, STP, and EtherChannel
+- Cross-device path validation and reciprocal-route checks
 - Network topology visualization (D3.js/Cytoscape)
 - WebSocket real-time analysis
-- Export scenarios to .pkt files
 - Automated grading for lab exercises

@@ -32,7 +32,7 @@ class RuleEngine:
             raw_input: Raw CLI output or running-config text
             
         Returns:
-            dict with 'parsed', 'issues', 'summary' keys
+            dict with parsed summary/data, issues, and aggregate summary
         """
         # Step 1: Parse
         parsed = parse_all(raw_input)
@@ -58,12 +58,8 @@ class RuleEngine:
         summary = self._build_summary(all_issues)
 
         return {
-            "parsed": {
-                "hostname": parsed.get("hostname", "Unknown"),
-                "interface_count": len(parsed.get("interfaces", [])),
-                "route_count": len(parsed.get("routes", [])),
-                "vlan_count": len(parsed.get("vlans", [])),
-            },
+            "parsed": self._build_parsed_summary(parsed),
+            "parsed_data": parsed,
             "issues": all_issues,
             "summary": summary,
         }
@@ -71,7 +67,7 @@ class RuleEngine:
     def run_rules(self, parsed: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Run all diagnostic rules on an already-parsed data dict.
-        Used by the .pkt upload endpoint where parsing is done externally.
+        Used when parsing is handled upstream and only rule execution is needed.
         """
         all_issues = []
         for rule_fn in self.rules:
@@ -106,6 +102,19 @@ class RuleEngine:
             "total_issues": len(issues),
             "by_severity": severity_counts,
             "by_type": type_counts,
+        }
+
+    def _build_parsed_summary(self, parsed: dict[str, Any]) -> dict[str, Any]:
+        """Build a compact summary of the parsed capture scope."""
+        devices = parsed.get("devices") or []
+        return {
+            "hostname": parsed.get("hostname", "Unknown"),
+            "device_count": len(devices) if devices else 1,
+            "device_names": [device.get("hostname", "Unknown") for device in devices] if devices else [parsed.get("hostname", "Unknown")],
+            "interface_count": len(parsed.get("interfaces", [])),
+            "route_count": len(parsed.get("routes", [])),
+            "vlan_count": len(parsed.get("vlans", [])),
+            "router_process_count": len(parsed.get("router_config", [])),
         }
 
 

@@ -7,8 +7,8 @@ const features = [
                 <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
             </svg>
         ),
-        title: '.pkt File Analysis',
-        desc: 'Upload your Packet Tracer .pkt file directly. No CLI copy-paste needed — we parse the XML topology automatically.',
+        title: 'Multi-Device CLI Analysis',
+        desc: 'Paste one or more Packet Tracer device captures in a single run and analyze the whole troubleshooting attempt together.',
     },
     {
         icon: (
@@ -16,8 +16,8 @@ const features = [
                 <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
             </svg>
         ),
-        title: '8 Diagnostic Rules',
-        desc: 'Deterministic rule engine checks interfaces, routes, VLANs, duplicate IPs, trunk mismatches, and more.',
+        title: 'Deterministic Rule Engine',
+        desc: 'A grounded rule engine checks interfaces, routes, VLANs, duplicate IPs, trunk mismatches, and more.',
     },
     {
         icon: (
@@ -25,8 +25,17 @@ const features = [
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
             </svg>
         ),
-        title: 'Health Scoring',
-        desc: 'Get a 0–100 network health score broken down across Routing, Interface, VLAN, and IP categories.',
+        title: 'Evidence Coverage',
+        desc: 'See how complete your CLI capture is, which commands are missing, and how confident the analysis should be.',
+    },
+    {
+        icon: (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+        ),
+        title: 'Priority Fix Plan',
+        desc: 'Get an ordered repair sequence so root-cause problems are handled before downstream symptoms.',
     },
     {
         icon: (
@@ -53,14 +62,14 @@ const features = [
             </svg>
         ),
         title: 'Practice Scenarios',
-        desc: '15+ pre-built labs across 3 difficulty levels — routing, VLAN, interface, IP, and mixed topology scenarios.',
+        desc: 'Practice routing, VLAN, interface, and IP troubleshooting with built-in scenarios and guided fixes.',
     },
 ];
 
 const steps = [
-    { num: '01', title: 'Upload or Paste', desc: 'Drop your .pkt file or paste Cisco CLI output from Packet Tracer.' },
-    { num: '02', title: 'Instant Analysis', desc: 'Our rule engine scans for 20+ failure patterns in under a second.' },
-    { num: '03', title: 'Fix & Learn', desc: 'Get exact IOS fix commands and educational explanations for every issue.' },
+    { num: '01', title: 'Capture CLI Output', desc: 'Run the recommended show commands in Packet Tracer and copy one or more device captures.' },
+    { num: '02', title: 'Analyze Evidence', desc: 'The engine scores capture quality, parses device scope, and detects concrete network failures.' },
+    { num: '03', title: 'Fix In Order', desc: 'Follow the priority repair plan and use the learning explanations to understand each change.' },
 ];
 
 export default function LandingPage() {
@@ -95,8 +104,8 @@ export default function LandingPage() {
                     <span className="hero-title-accent">in Seconds</span>
                 </h1>
                 <p className="hero-subtitle">
-                    Upload your Packet Tracer <code>.pkt</code> file or paste CLI output. NetAssist
-                    diagnoses interface, routing, VLAN, and IP issues instantly — with exact fix commands.
+                    Paste CLI output from Packet Tracer. NetAssist diagnoses interface,
+                    routing, VLAN, and IP issues, scores evidence quality, and gives you the best repair order.
                 </p>
                 <div className="hero-cta">
                     <Link to="/register" className="btn btn-primary btn-lg">
@@ -110,12 +119,12 @@ export default function LandingPage() {
                 <div className="hero-stats">
                     <div className="hero-stat">
                         <span className="hero-stat-value">8</span>
-                        <span className="hero-stat-label">Diagnostic rules</span>
+                        <span className="hero-stat-label">Core rule families</span>
                     </div>
                     <div className="hero-stat-divider" />
                     <div className="hero-stat">
-                        <span className="hero-stat-value">15+</span>
-                        <span className="hero-stat-label">Practice labs</span>
+                        <span className="hero-stat-value">Built-in</span>
+                        <span className="hero-stat-label">Practice scenarios</span>
                     </div>
                     <div className="hero-stat-divider" />
                     <div className="hero-stat">
@@ -130,7 +139,7 @@ export default function LandingPage() {
                 <div className="section-label">Features</div>
                 <h2 className="section-title">Everything you need to ace your lab</h2>
                 <p className="section-subtitle">
-                    Built specifically for Cisco Packet Tracer — no real hardware needed.
+                    Built specifically for Cisco Packet Tracer labs using the workflow that works reliably.
                 </p>
                 <div className="features-grid">
                     {features.map((f) => (
