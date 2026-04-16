@@ -32,6 +32,7 @@ class Settings(BaseSettings):
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
         "http://127.0.0.1:3000",
+        "https://netassist-debug-fyp.vercel.app",
     ]
 
     # Port for Render deployment
