@@ -46,7 +46,8 @@ pip install -r requirements.txt
 python main.py
 ```
 
-Backend runs at **http://localhost:8000** (API docs at /docs).
+Backend runs at **-                                                         
+  - Backend: https://netassist-api-production.up.railway.app** (API docs at /docs).
 
 ### Frontend Setup
 
@@ -56,7 +57,8 @@ npm install
 npm run dev
 ```
 
-Frontend runs at **http://localhost:5173**.
+Frontend runs at **- Frontend: https://frontend-beige-xi-18.vercel.app                                                          
+  - **.
 
 ### Run Tests
 
