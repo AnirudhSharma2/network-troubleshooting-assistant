@@ -1,9 +1,11 @@
 """Admin API routes — user management and global analytics."""
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
+from config import settings
 from database import get_db
 from models.user import User
 from models.analysis import Analysis
@@ -11,6 +13,29 @@ from schemas import UserResponse, UserUpdate, AdminAnalytics
 from services.auth import require_role
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
+
+
+class BootstrapRequest(BaseModel):
+    username: str
+    bootstrap_key: str
+
+
+@router.post("/bootstrap", response_model=UserResponse)
+def bootstrap_admin(data: BootstrapRequest, db: Session = Depends(get_db)):
+    """One-time admin promotion via secret key. Set ADMIN_BOOTSTRAP_KEY env var to enable."""
+    if not settings.ADMIN_BOOTSTRAP_KEY:
+        raise HTTPException(status_code=404, detail="Not found")
+    if data.bootstrap_key != settings.ADMIN_BOOTSTRAP_KEY:
+        raise HTTPException(status_code=403, detail="Invalid bootstrap key")
+
+    user = db.query(User).filter(User.username == data.username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.role = "admin"
+    db.commit()
+    db.refresh(user)
+    return UserResponse.model_validate(user)
 
 
 @router.get("/users", response_model=list[UserResponse])

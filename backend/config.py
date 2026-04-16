@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     AI_PROVIDER: str = "mock"
     OPENAI_API_KEY: Optional[str] = None
 
+    # Admin bootstrap secret — set this env var to enable POST /api/admin/bootstrap
+    ADMIN_BOOTSTRAP_KEY: Optional[str] = None
+
     # CORS — allow deployed frontend origins
     CORS_ORIGINS: list[str] = [
         "http://localhost:5173",
